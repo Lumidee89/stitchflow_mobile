@@ -1,0 +1,13 @@
+import React from 'react';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { Card } from '../../../src/components/Card';
+import { EmptyState, ErrorState, LoadingState } from '../../../src/components/StateViews';
+import { messagesApi } from '../../../src/api';
+import { useAsync } from '../../../src/hooks/useAsync';
+import { colors, spacing, typography } from '../../../src/theme';
+
+export default function CustomerMessagesScreen(){const{data,loading,error,refresh}=useAsync(()=>messagesApi.conversations(),[],true);return <SafeAreaView style={s.safe} edges={['top']}><View style={s.header}><Text style={s.title}>Messages</Text></View>{loading&&!data&&<LoadingState label="Loading your designers…"/>}{error&&!data&&<ErrorState message={error} onRetry={refresh}/>} {data?.length===0&&<EmptyState icon="chatbubble-ellipses-outline" title="No designer connected" message="Accept a designer invitation to start messaging."/>}<FlatList data={data??[]} keyExtractor={item=>String(item.customer_id)} contentContainerStyle={s.list} renderItem={({item})=><Pressable onPress={()=>router.push({pathname:'/(customer)/messages/chat',params:{customerId:item.customer_id,name:item.name}})}><Card style={s.card}><View style={s.icon}><Ionicons name="chatbubble-ellipses" size={22} color={colors.teal}/></View><View style={{flex:1}}><Text style={s.designer}>{item.name}</Text><Text style={s.preview} numberOfLines={1}>{item.last_message??'Discuss fittings, fabric and delivery'}</Text></View>{item.unread_count>0&&<View style={s.unread}><Text style={s.unreadText}>{item.unread_count}</Text></View>}<Ionicons name="chevron-forward" size={20} color={colors.textMuted}/></Card></Pressable>}/></SafeAreaView>}
+const s=StyleSheet.create({safe:{flex:1,backgroundColor:colors.background},header:{paddingHorizontal:spacing.xl,paddingTop:spacing.md,paddingBottom:spacing.sm},title:{...typography.h1,color:colors.textPrimary},list:{padding:spacing.xl,gap:spacing.md},card:{flexDirection:'row',alignItems:'center',gap:spacing.md},icon:{width:48,height:48,borderRadius:18,backgroundColor:colors.tealMuted,alignItems:'center',justifyContent:'center'},designer:{...typography.bodyStrong,color:colors.teal},preview:{...typography.caption,color:colors.textSecondary,marginTop:3},unread:{minWidth:22,height:22,borderRadius:11,backgroundColor:colors.gold,alignItems:'center',justifyContent:'center'},unreadText:{...typography.caption,color:'#fff',fontWeight:'700'}});
